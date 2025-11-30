@@ -68,7 +68,7 @@ export default function LogoutDialog({
           </AlertDialogCancel>
           <Button
             variant="destructive"
-            className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition-all"
+            className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition-all cursor-pointer"
             onClick={() => {
               handleLogout();
               setOpen(false);

@@ -2,7 +2,6 @@
 
 import api from "@/lib/axios";
 import { setAuthCookies } from "@/lib/auth";
-import { redirect } from "next/navigation";
 
 export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string;
@@ -13,7 +12,7 @@ export async function loginAction(formData: FormData) {
 
     await setAuthCookies(res.data.token, res.data.refreshToken);
 
-    redirect("/dashboard");
+    return { success: true };
   } catch (error: any) {
     console.error("Login error:", error?.response?.data || error);
     return { error: error?.response?.data?.message || "Login failed" };

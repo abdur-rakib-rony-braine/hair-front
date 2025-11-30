@@ -1,18 +1,20 @@
 "use client";
 
-import { useTransition, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Scissors, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
+import { LoadingSpinner } from "@/components/re-usable/loading-spinner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail, Scissors } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 export default function LoginForm({
   loginAction,
 }: {
-  loginAction: (data: FormData) => Promise<{ error?: string } | void>;
+  loginAction: (data: FormData) => Promise<{ error?: string; success?: boolean } | void>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,12 @@ export default function LoginForm({
           action={(formData) => {
             startTransition(async () => {
               const res = await loginAction(formData);
-              if (res?.error) setError(res.error);
+              if (res?.error) {
+                setError(res.error);
+              } else if (res?.success) {
+                router.push("/dashboard");
+                router.refresh();
+              }
             });
           }}
           className="space-y-4"
@@ -55,7 +62,15 @@ export default function LoginForm({
             <Label htmlFor="email">Email Address</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input id="email" name="email" type="email" placeholder="admin@salon.com" className="pl-10" required />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="admin@salon.com"
+                className="pl-10"
+                required
+                disabled={isPending}
+              />
             </div>
           </div>
 
@@ -70,11 +85,13 @@ export default function LoginForm({
                 placeholder="••••••••"
                 className="pl-10 pr-10"
                 required
+                disabled={isPending}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                disabled={isPending}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -84,10 +101,12 @@ export default function LoginForm({
           <Button
             type="submit"
             disabled={isPending}
-            className="w-full py-3 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center justify-center gap-2"
+            className="w-full h-10 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center justify-center gap-2 cursor-pointer"
           >
             {isPending ? (
-              <span>Loading...</span>
+              <div className="flex items-center justify-center">
+                <LoadingSpinner size={25} color="white" />
+              </div>
             ) : (
               <>
                 <span>Sign In</span>
@@ -99,13 +118,12 @@ export default function LoginForm({
 
         <div className="text-center pt-4">
           <span className="text-gray-600 mr-1">Don't have an account?</span>
-          <Button
-            variant="link"
+          <Link
+            href="/signup"
             className="text-purple-600 hover:text-purple-700 p-0"
-            onClick={() => router.push("/signup")}
           >
             Sign Up
-          </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>

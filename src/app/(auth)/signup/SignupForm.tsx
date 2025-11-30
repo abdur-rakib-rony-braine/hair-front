@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff, User, ArrowRight, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 export default function SignupForm({
   signupAction,
 }: {
-  signupAction: (data: FormData) => Promise<{ error?: string } | void>;
+  signupAction: (data: FormData) => Promise<{ error?: string; success?: boolean } | void>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
@@ -37,8 +38,15 @@ export default function SignupForm({
         <form
           action={(formData) => {
             startTransition(async () => {
+              setError(null);
               const res = await signupAction(formData);
-              if (res?.error) setError(res.error);
+
+              if (res?.error) {
+                setError(res.error);
+              } else if (res?.success) {
+                router.push("/dashboard");
+                router.refresh();
+              }
             });
           }}
           className="space-y-4"
@@ -102,13 +110,12 @@ export default function SignupForm({
 
         <div className="text-center pt-4">
           <span className="text-gray-600 mr-1">Already have an account?</span>
-          <Button
-            variant="link"
+          <Link
+            href="/login"
             className="text-purple-600 hover:text-purple-700 p-0"
-            onClick={() => router.push("/login")}
           >
             Sign In
-          </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>

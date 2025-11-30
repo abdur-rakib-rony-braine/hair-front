@@ -2,7 +2,6 @@
 
 import api from "@/lib/axios";
 import { setAuthCookies } from "@/lib/auth";
-import { redirect } from "next/navigation";
 
 export async function signupAction(formData: FormData) {
   const name = formData.get("name") as string;
@@ -13,8 +12,9 @@ export async function signupAction(formData: FormData) {
     const res = await api.post("/authentications/signup", { name, email, password });
 
     await setAuthCookies(res.data.token, res.data.refreshToken);
-    redirect("/dashboard");
+    return { success: true };
   } catch (error: any) {
+    console.error("Signup error:", error?.response?.data || error);
     return { error: error?.response?.data?.message || "Signup failed" };
   }
 }
