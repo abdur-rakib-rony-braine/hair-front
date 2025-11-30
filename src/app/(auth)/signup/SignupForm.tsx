@@ -5,10 +5,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Globe,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { languages } from "@/constants/language";
 
 export default function SignupForm({
   signupAction,
@@ -18,6 +40,9 @@ export default function SignupForm({
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [language, setLanguage] = useState<string>("en");
+  const [open, setOpen] = useState(false);
+
   const router = useRouter();
 
   return (
@@ -28,41 +53,32 @@ export default function SignupForm({
       </CardHeader>
 
       <CardContent className="space-y-4">
+
         {error && (
           <Alert className="border-red-200 bg-red-50">
-            <AlertCircle color="oklch(57.7% 0.245 27.325)" className="h-4 w-4" />
+            <AlertCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">{error}</AlertDescription>
           </Alert>
         )}
 
         <form
-          action={(formData) => {
+          action={(formData) =>
             startTransition(async () => {
               setError(null);
               const res = await signupAction(formData);
-
-              if (res?.error) {
-                setError(res.error);
-              } else if (res?.success) {
+              if (res?.error) setError(res.error);
+              if (res?.success) {
                 router.push("/dashboard");
                 router.refresh();
               }
-            });
-          }}
+            })
+          }
           className="space-y-4"
         >
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input id="name" name="name" placeholder="Your Name" className="pl-10" required />
-            </div>
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input id="email" name="email" type="email" placeholder="Email" className="pl-10" required />
             </div>
           </div>
@@ -70,7 +86,7 @@ export default function SignupForm({
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 id="password"
                 name="password"
@@ -82,13 +98,55 @@ export default function SignupForm({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
+           <input type="hidden" name="language" value={language} />
+          <div className="space-y-2">
+            <Label>Language</Label>
+
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-gray-400" />
+                    {languages.find((l) => l.value === language)?.label}
+                  </div>
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search language..." />
+                  <CommandEmpty>No language found.</CommandEmpty>
+
+                  <CommandGroup>
+                    {languages.map((l) => (
+                      <CommandItem
+                        key={l.value}
+                        value={l.label}
+                        onSelect={() => {
+                          setLanguage(l.value);
+                          setOpen(false);
+                        }}
+                      >
+                        {l.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          
           <Button
             type="submit"
             disabled={isPending}
@@ -110,10 +168,7 @@ export default function SignupForm({
 
         <div className="text-center pt-4">
           <span className="text-gray-600 mr-1">Already have an account?</span>
-          <Link
-            href="/login"
-            className="text-purple-600 hover:text-purple-700 p-0"
-          >
+          <Link href="/login" className="text-purple-600 hover:text-purple-700">
             Sign In
           </Link>
         </div>
