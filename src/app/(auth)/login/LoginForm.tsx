@@ -1,15 +1,17 @@
 "use client";
 
-import { LoadingSpinner } from "@/components/re-usable/loading-spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail, Scissors } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { useMarket } from "@/providers/MarketProvider";
+import { getEmailPlaceholder, getMarketGradientClass, getMarketTextGradientClass } from "@/lib/utils";
 
 export default function LoginForm({
   loginAction,
@@ -20,27 +22,70 @@ export default function LoginForm({
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { market, locale } = useMarket();
+
+  const getLocalizedText = () => {
+    if (locale === 'fi') {
+      return {
+        welcome: 'Tervetuloa Takaisin',
+        description: 'Kirjaudu sisään parturi-kampaamopaneeliisi',
+        email: 'Sähköpostiosoite',
+        password: 'Salasana',
+        signIn: 'Kirjaudu Sisään',
+        noAccount: 'Eikö sinulla ole tiliä?',
+        signUp: 'Rekisteröidy',
+        showPassword: 'Näytä salasana',
+        hidePassword: 'Piilota salasana',
+      };
+    }
+    if (locale === 'de') {
+      return {
+        welcome: 'Willkommen zurück',
+        description: 'Melden Sie sich bei Ihrem Salon-Dashboard an',
+        email: 'E-Mail-Adresse',
+        password: 'Passwort',
+        signIn: 'Anmelden',
+        noAccount: 'Sie haben noch kein Konto?',
+        signUp: 'Registrieren',
+        showPassword: 'Passwort anzeigen',
+        hidePassword: 'Passwort ausblenden',
+      };
+    }
+    return {
+      welcome: 'Welcome Back',
+      description: 'Sign in to access your salon dashboard',
+      email: 'Email Address',
+      password: 'Password',
+      signIn: 'Sign In',
+      noAccount: "Don't have an account?",
+      signUp: 'Sign Up',
+      showPassword: 'Show password',
+      hidePassword: 'Hide password',
+    };
+  };
+
+  const localized = getLocalizedText();
 
   return (
-    <Card className="w-full min-w-96">
-      <CardHeader className="text-center">
-        <div className="mb-6">
-          <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Scissors className="w-8 h-8 text-white" />
+    <Card className="w-full max-w-md mx-auto border-border shadow-elevated">
+      <CardHeader className="text-center space-y-4">
+        <div className="mb-4">
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${getMarketGradientClass(market)} shadow-lg`}>
+            <Scissors className="w-10 h-10 text-white" />
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className={`text-3xl font-bold ${getMarketTextGradientClass(market)}`}>
             Salon Pro
-          </span>
+          </h1>
         </div>
-        <CardTitle className="text-2xl">Welcome Back</CardTitle>
-        <CardDescription>Sign in to access your salon dashboard</CardDescription>
+        <CardTitle className="text-2xl font-semibold">{localized.welcome}</CardTitle>
+        <CardDescription className="text-muted-foreground">{localized.description}</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
         {error && (
-          <Alert className="border-red-200 bg-red-50">
-            <AlertCircle color="oklch(57.7% 0.245 27.325)" className="h-4 w-4" />
-            <AlertDescription className="text-red-800">{error}</AlertDescription>
+          <Alert variant="destructive" className="animate-fade-in">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
@@ -59,15 +104,15 @@ export default function LoginForm({
           className="space-y-4"
         >
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email" className="text-sm font-medium">{localized.email}</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="admin@salon.com"
-                className="pl-10"
+                placeholder={getEmailPlaceholder(market)}
+                className="pl-10 h-11"
                 required
                 disabled={isPending}
               />
@@ -75,25 +120,31 @@ export default function LoginForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm font-medium">{localized.password}</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="pl-10 pr-10"
+                className="pl-10 pr-10 h-11"
                 required
                 disabled={isPending}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                 disabled={isPending}
+                aria-label={showPassword ? localized.hidePassword : localized.showPassword}
+                title={showPassword ? localized.hidePassword : localized.showPassword}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
@@ -101,29 +152,32 @@ export default function LoginForm({
           <Button
             type="submit"
             disabled={isPending}
-            className="w-full h-10 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full h-11 text-base font-medium"
           >
             {isPending ? (
-              <div className="flex items-center justify-center">
-                <LoadingSpinner size={25} color="white" />
+              <div className="flex items-center gap-2">
+                <Spinner className="w-4 h-4" />
+                <span>{locale === 'fi' ? 'Kirjaudutaan...' : locale === 'de' ? 'Anmelden...' : 'Signing in...'}</span>
               </div>
             ) : (
-              <>
-                <span>Sign In</span>
+              <div className="flex items-center justify-center gap-2">
+                <span>{localized.signIn}</span>
                 <ArrowRight className="w-5 h-5" />
-              </>
+              </div>
             )}
           </Button>
         </form>
 
-        <div className="text-center pt-4">
-          <span className="text-gray-600 mr-1">Don't have an account?</span>
-          <Link
-            href="/signup"
-            className="text-purple-600 hover:text-purple-700 p-0"
-          >
-            Sign Up
-          </Link>
+        <div className="text-center pt-4 border-t">
+          <p className="text-muted-foreground text-sm">
+            {localized.noAccount}{" "}
+            <Link
+              href="/signup"
+              className="text-primary font-medium hover:underline transition-colors"
+            >
+              {localized.signUp}
+            </Link>
+          </p>
         </div>
       </CardContent>
     </Card>

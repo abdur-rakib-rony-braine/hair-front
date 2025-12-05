@@ -13,6 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import { useMarket } from "@/providers/MarketProvider";
 
 interface LogoutDialogProps {
   triggerLabel?: string;
@@ -21,12 +22,43 @@ interface LogoutDialogProps {
 }
 
 export default function LogoutDialog({
-  triggerLabel = "Logout",
+  triggerLabel,
   triggerVariant = "default",
   className = "",
 }: LogoutDialogProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { locale } = useMarket();
+
+  const getLocalizedText = () => {
+    if (locale === 'fi') {
+      return {
+        logout: 'Kirjaudu Ulos',
+        confirmLogout: 'Vahvista uloskirjautuminen',
+        logoutDescription: 'Oletko varma, että haluat kirjautua ulos? Sinun täytyy kirjautua uudelleen sisään päästäksesi kojelaudalle.',
+        cancel: 'Peruuta',
+        confirm: 'Kirjaudu Ulos',
+      };
+    }
+    if (locale === 'de') {
+      return {
+        logout: 'Abmelden',
+        confirmLogout: 'Abmeldung bestätigen',
+        logoutDescription: 'Sind Sie sicher, dass Sie sich abmelden möchten? Sie müssen sich erneut anmelden, um auf Ihr Dashboard zuzugreifen.',
+        cancel: 'Abbrechen',
+        confirm: 'Abmelden',
+      };
+    }
+    return {
+      logout: 'Logout',
+      confirmLogout: 'Confirm Logout',
+      logoutDescription: 'Are you sure you want to logout? You will need to login again to access your dashboard.',
+      cancel: 'Cancel',
+      confirm: 'Logout',
+    };
+  };
+
+  const localized = getLocalizedText();
 
   const handleLogout = async () => {
     try {
@@ -45,36 +77,35 @@ export default function LogoutDialog({
       <AlertDialogTrigger asChild>
         <Button
           variant={triggerVariant}
-          className={`px-4 py-2 rounded-md shadow hover:shadow-lg transition-all ${className}`}
+          className={className}
         >
-          {triggerLabel}
+          {triggerLabel || localized.logout}
         </Button>
       </AlertDialogTrigger>
 
-      <AlertDialogContent className="max-w-md rounded-lg border border-gray-200 shadow-lg p-6 bg-white">
+      <AlertDialogContent className="max-w-md">
         <AlertDialogHeader className="text-center">
-          <AlertDialogTitle className="text-xl font-semibold text-gray-800">
-            Confirm Logout
+          <AlertDialogTitle className="text-xl font-semibold">
+            {localized.confirmLogout}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-600 mt-2 text-sm">
-            Are you sure you want to logout? You will need to login again to
-            access your dashboard.
+          <AlertDialogDescription className="mt-2 text-sm">
+            {localized.logoutDescription}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter className="flex justify-end space-x-2 mt-4">
-          <AlertDialogCancel className="px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all">
-            Cancel
+          <AlertDialogCancel className="px-4 py-2">
+            {localized.cancel}
           </AlertDialogCancel>
           <Button
             variant="destructive"
-            className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition-all cursor-pointer"
+            className="px-4 py-2 cursor-pointer"
             onClick={() => {
               handleLogout();
               setOpen(false);
             }}
           >
-            Logout
+            {localized.confirm}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

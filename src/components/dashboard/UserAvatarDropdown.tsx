@@ -13,8 +13,8 @@ import { useUser } from "@/hooks/useUser";
 import { Settings, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { LoadingSpinner } from "../re-usable/loading-spinner";
 import LogoutDialog from "./LogoutDialog";
+import { Spinner } from "../ui/spinner";
 
 const UserAvatarDropdown = () => {
   const router = useRouter();
@@ -33,7 +33,7 @@ const UserAvatarDropdown = () => {
   if (loading) {
     return (
       <Button variant="ghost" size="sm" disabled>
-        <LoadingSpinner size={35} color="gray" />
+        <Spinner />
       </Button>
     );
   }
